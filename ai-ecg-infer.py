@@ -30,9 +30,6 @@ def build_argparser():
     args.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
     args.add_argument("-m", "--model", help="Required. Path to an .xml file with a trained model.", required=True,
                       type=str)
-    args.add_argument("-i", "--input", help="Required. Path to a folder with images or path to an image files",
-                      required=True,
-                      type=str, nargs="+")
     args.add_argument("-l", "--cpu_extension",
                       help="Optional. Required for CPU custom layers. "
                            "MKLDNN (CPU)-targeted custom layers. Absolute path to a shared library with the"
@@ -79,7 +76,18 @@ def main():
     assert len(net.inputs.keys()) == 1, "Sample supports only single input topologies"
     assert len(net.outputs) == 1, "Sample supports only single output topologies"
 
-    print ("test stop here")
+    log.info("Preparing input blobs")
+    input_blob = next(iter(net.inputs))
+    out_blob = next(iter(net.outputs))
+    net.batch_size = 1
+
+    print("input_shape is", net.inputs[input_blob].shape)
+
+    # Loading model to the plugin
+    log.info("Loading model to the plugin")
+    exec_net = plugin.load(network=net)
+
+    print("The test stop here")
 
     return
 
